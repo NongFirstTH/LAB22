@@ -6,7 +6,7 @@
 #include<iomanip>
 
 using namespace std;
-
+int x,y,z;
 class Equipment{
 	int hpmax;
 	int atk;
@@ -39,7 +39,6 @@ class Unit{
 		bool isDead();
 		void equip(Equipment *);  
 };
-
 Unit::Unit(string t,string n){ 
 	type = t;
 	name = n;
@@ -52,8 +51,12 @@ Unit::Unit(string t,string n){
 		atk = rand()%5+25;
 		def = rand()%3+5;
 	}
+	x = hpmax;
+	y = atk;
+	z = def;
 	hp = hpmax;	
 	guard_on = false;
+	dodge_on = false;
 	equipment = NULL;
 }
 
@@ -71,9 +74,32 @@ void Unit::showStatus(){
 		cout << "\n\t\t\t\t---------------------------------------\n";
 	}
 }
+Equipment::Equipment(int x,int y,int z){
+hpmax = x; atk = y; def = z;
+}
+ vector<int> Equipment::getStat(){
+	vector<int> a;
+	a.push_back(hpmax);
+	a.push_back(atk);
+	a.push_back(def);
+	return a;
+ }
+void Unit::equip(Equipment *e){
+hpmax = x;
+atk = y;
+def = z;
+vector<int> a = (*e).getStat();
+hpmax += a[0];
+atk += a[1];
+def += a[2];
+if(hp>hpmax){
+	hp=hpmax;
+}
+}
 
 void Unit::newTurn(){
-	guard_on = false; 
+	guard_on = false;
+	dodge_on = false; 
 }
 
 int Unit::beAttacked(int oppatk){
@@ -81,7 +107,12 @@ int Unit::beAttacked(int oppatk){
 	if(oppatk > def){
 		dmg = oppatk-def;	
 		if(guard_on) dmg = dmg/3;
-	}	
+	}
+	if(dodge_on){
+	int x = rand()%2;	
+	if(x==0){dmg=0;}
+	else{dmg = 2*dmg;}
+	}
 	hp -= dmg;
 	if(hp <= 0){hp = 0;}
 	
@@ -103,11 +134,18 @@ void Unit::guard(){
 	guard_on = true;
 }	
 
+void Unit::dodge(){
+	dodge_on = true;
+}	
+
 bool Unit::isDead(){
 	if(hp <= 0) return true;
 	else return false;
 }
 
+int Unit::ultimateAttack(Unit &opp){
+	return opp.beAttacked(atk*2);
+}
 void drawScene(char p_action,int p,char m_action,int m){
 	cout << "                                                       \n";
 	if(p_action == 'A'){
